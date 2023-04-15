@@ -60,3 +60,4 @@ Contributors
 * Mark Galloway
 * Abram Hindle
 * Cole Mackenzie
+* Tran Phuong Anh Nguyen
