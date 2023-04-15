@@ -60,41 +60,13 @@ class World:
         return self.space
 
 myWorld = World()        
+clients = set()
 
 def set_listener( entity, data ):
     ''' do something with the update ! '''
     print(f"Entity '{entity}' was updated with data: {data}")
 
-myWorld.add_set_listener( set_listener )
-
-# @sockets.route('/subscribe')
-# def echo_socket(ws):
-  
-#     while not ws.closed:
-#         message = ws.receive()
-#         print("here")
-#         print(message)
-#         print("endhere")
-#         #dictionary = {}
-#         if type(message) == str:
-#             dictionary = json.loads(message)
-#         elif type(message) == dict:
-#             dictionary = message
-#         print("hi")
-#         print(dictionary)  
-#         print("hi2")
-#         print(dictionary['message'])
-#         print("hi3")
-#         if 'message' in dictionary and dictionary['message'] == "SEND ME THE WORLD" :
-#             ws.send(json.dumps(myWorld.world()))
-#         else: 
-#             print(dictionary)
-#             for key in dictionary['data']:
-#                 myWorld.update(dictionary['entity'], key, dictionary['data'][key]) 
-
-   
-#         # Add to world
-        
+myWorld.add_set_listener( set_listener )   
         
 @app.route('/')
 def hello():
@@ -104,26 +76,20 @@ def hello():
 def read_ws(ws,client):
     '''A greenlet function that reads from the websocket and updates the world'''
     # XXX: TODO IMPLEMENT ME
-    print("here")
-    print(client)
     try:
         while True:
-            # Read message from websocket
             message = ws.receive()
             if message is not None:
-                # Decode JSON data
                 data = json.loads(message)
-                # Update world
-                for key, value in data.items():
-                    myWorld.update(key, client['id'], value)
+                # for key, value in data.items():
+                #     myWorld.update(key, value)
             else:
-                # If message is None, the socket is closed
                 break
     except:
-        # If an error occurs, close the socket
+        # If error occurs then lose the socket
         ws.close()
     return None
-clients = set()
+
 @sockets.route('/subscribe')
 def subscribe_socket(ws):
     '''Fufill the websocket URL of /subscribe, every update notify the
@@ -131,15 +97,9 @@ def subscribe_socket(ws):
     # XXX: TODO IMPLEMENT ME
     clients.add(ws)
     while not ws.closed:
-        # read message from the client
         message = ws.receive()
         if message:
-            # if there's a message, parse it as JSON
             data = json.loads(message)
-
-            # update the world
-
-
             for entity, entity_data in data.items():
                 myWorld.set(entity, entity_data)    
                 for client in clients:                      
@@ -166,7 +126,7 @@ def update(entity):
     '''update the entities via this interface'''
     data = flask_post_json()
     myWorld.set(entity, data)
-    return "OK"
+    return "UPDATE"
 
 @app.route("/world", methods=['POST','GET'])    
 def world():
@@ -183,8 +143,7 @@ def get_entity(entity):
 def clear():
     '''Clear the world out!'''
     myWorld.clear()
-    return "OK"
-
+    return "CLEAR"
 
 
 if __name__ == "__main__":
